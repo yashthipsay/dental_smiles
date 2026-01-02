@@ -1,0 +1,102 @@
+### Variables
+@baseUrl = http://localhost:8000/api
+
+### =====================
+### Phone OTP Authentication (No Auth Required)
+### =====================
+
+### 1. Send OTP to phone number (Public - No Token Needed)
+# @name sendOTP
+POST {{baseUrl}}/phone-auth/send-otp/
+Content-Type: application/json
+
+{
+    "phone_number": "+911234567890"
+}
+
+### 2. Verify OTP and Create User (Public - No Token Needed)
+# @name verifyOTP
+POST {{baseUrl}}/phone-auth/verify-otp/
+Content-Type: application/json
+
+{
+    "phone_number": "+911234567890",
+    "otp": "544584",
+    "full_name": "yash"
+}
+
+### 3. Resend OTP (Public - No Token Needed)
+POST {{baseUrl}}/phone-auth/resend-otp/
+Content-Type: application/json
+
+{
+    "phone_number": "+919175668567"
+}
+
+### 4. Check if Phone Number is Already Registered (Public - No Token Needed)
+POST {{baseUrl}}/phone-auth/is-registered/
+Content-Type: application/json
+
+{
+    "phone_number": "+911234567890"
+}
+
+### =====================
+### Authenticated Endpoints (Token Required)
+### =====================
+
+### Capture access token from verifyOTP response
+@accessToken = {{verifyOTP.response.body.access}}
+
+### Get Phone Status (Authenticated - Token Required)
+GET {{baseUrl}}/phone-auth/status/
+Authorization: Bearer {{accessToken}}
+
+### Check if Profile is Complete (Authenticated - Token Required)
+GET {{baseUrl}}/phone-auth/is-profile-complete/
+Authorization: Bearer {{accessToken}}
+
+### =====================
+### Reviews (Token Required)
+### =====================
+
+### List all reviews
+GET {{baseUrl}}/reviews/
+Authorization: Bearer {{accessToken}}
+
+### Submit a new review
+POST {{baseUrl}}/reviews/
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+    "rating": 5,
+    "comment": "Great clinic! Excellent service and professional staff."
+}
+
+### Retrieve a specific review (replace 1 with actual ID)
+GET {{baseUrl}}/reviews/1/
+Authorization: Bearer {{accessToken}}
+
+### Update your review
+PUT {{baseUrl}}/reviews/1/
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+    "rating": 4,
+    "comment": "Good service, could improve waiting time."
+}
+
+### Partial update review
+PATCH {{baseUrl}}/reviews/1/
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+    "rating": 5
+}
+
+### Delete your review
+DELETE {{baseUrl}}/reviews/1/
+Authorization: Bearer {{accessToken}}

@@ -14,3 +14,10 @@ class Prescription(models.Model):
     notes = models.TextField()
 
     issued_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-issued_at']
+
+    def __str__(self):
+        return f"Prescription for {self.user.full_name}"
+            

@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
+from datetime import timedelta
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -27,6 +28,16 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+}
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
+}
 
 # Application definition
 
@@ -45,6 +56,7 @@ INSTALLED_APPS = [
     "apps.prescriptions.apps.PrescriptionsConfig",
     "apps.reviews.apps.ReviewsConfig",
     "apps.common.apps.CommonConfig",
+    "phone_auth.apps.PhoneAuthConfig",
 ]
 
 AUTH_USER_MODEL = "accounts.User"
@@ -52,6 +64,11 @@ AUTH_USER_MODEL = "accounts.User"
 CELERY_BROKER_URL = "redis://redis:6379/0"
 CELERY_ACCEPT_CONTENT = ["json"]
 CELERY_TASK_SERIALIZER = "json"
+
+# Twilio Settings (for future use)
+TWILIO_ACCOUNT_SID = "ACfe28895f504282e8bcf879ad2ab4e597"
+TWILIO_AUTH_TOKEN = "ede8c2230b6d7e5f75b4a94632f1640b"
+TWILIO_PHONE_NUMBER = "+12316384477"
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
