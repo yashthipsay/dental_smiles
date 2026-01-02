@@ -1,5 +1,10 @@
 from django.db import models
 from django.conf import settings
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+from django.utils import timezone
+from .models import TreatmentSession
+from .notification_service import send_treatment_session_notification
 
 User = settings.AUTH_USER_MODEL
 
@@ -128,6 +133,9 @@ class TreatmentSession(models.Model):
     
     scheduled_at = models.DateTimeField(null=True, blank=True)
     completed_at = models.DateTimeField(null=True, blank=True)
+
+    notification_sent = models.BooleanField(default=False)
+    notified_at = models.DateTimeField(null=True, blank=True)
     
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -169,3 +177,12 @@ class Prescription(models.Model):
 
     def __str__(self):
         return f"Prescription for {self.appointment or self.treatment_plan}"
+    
+    @receiver(post_save, sender=TreatmentSession)
+    def auto_notify_treatment_session(sender, instance, created, **kwargs):
+        """Automatically send WhatsApp notification when treatment session is created"""
+        if created and not instance.notification_sent:
+            response = send_treatment_session_notification(instance)
+            instance.notification_sent = True
+            instance.notified_at = timezone.now()
+            instance.save(update_fields=['notification_sent', 'notified_at'])
