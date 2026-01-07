@@ -21,9 +21,6 @@ docker compose exec web python manage.py makemigrations
 # Apply migrations to the database
 docker compose exec web python manage.py migrate
 
-# Apply migrations to the database
-docker compose exec web python manage.py migrate
-
 # 3. Create Admin User
 ## To access the Django admin panel at http://localhost:8000/admin/:
 

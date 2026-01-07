@@ -1,7 +1,7 @@
 import logging
 from django.utils import timezone
 
-logger = logger.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 def send_treatment_session_notification(treatment_session):
     """

@@ -3,8 +3,8 @@ from django.utils.html import format_html
 from django.urls import reverse, path
 from django.shortcuts import redirect
 from django.http import HttpResponseRedirect
-from pytz import timezone
-from .models import Appointment, TreatmentSession, TreatmentPlan
+from django.utils import timezone
+from .models import AppointmentRequest, Appointment, TreatmentSession, TreatmentPlan
 from .notification_service import send_treatment_session_notification
 
 @admin.register(Appointment)
@@ -15,6 +15,14 @@ class AppointmentAdmin(admin.ModelAdmin):
     readonly_fields = ['created_at']
     ordering = ['-scheduled_at']
 
+@admin.register(TreatmentPlan)
+class TreatmentPlanAdmin(admin.ModelAdmin):
+    list_display = ['user', 'treatment_type', 'total_amount', 'amount_paid', 'estimated_duration_months', 'is_completed', 'created_at']
+    list_filter = ['treatment_type', 'is_completed', 'created_at']
+    search_fields = ['user__phone_number', 'user__full_name']
+    readonly_fields = ['created_at']
+    ordering = ['-created_at']
+
 @admin.register(TreatmentSession)
 class TreatmentSessionAdmin(admin.ModelAdmin):
     list_display = ['get_user_name', 'get_treatment_type', 'session_number', 'scheduled_at', 'notification_status', 'notify_button']
@@ -23,18 +31,14 @@ class TreatmentSessionAdmin(admin.ModelAdmin):
     readonly_fields = ['created_at', 'updated_at', 'notification_sent', 'notified_at']
 
     fieldsets = (
-        ('Treatment Sessiono Info', {
-            'fields': ('treatment_plan', 'appointment', 'session_number', 'description')
+        ('Treatment Session Info', {
+            'fields': ('treatment_plan', 'session_number', 'amount_for_session', 'amount_received', 'description')
         }),
         ('Scheduling', {
             'fields': ('scheduled_at', 'completed_at')
         }),
         ('Notifications', {
             'fields': ('notification_sent', 'notified_at'),
-            'classes': ('collapse',)
-        }),
-        ('Timestamps', {
-            'fields': ('created_at', 'updated_at'),
             'classes': ('collapse',)
         }),
         ('Timestamps', {
@@ -74,7 +78,7 @@ class TreatmentSessionAdmin(admin.ModelAdmin):
         custom_urls = [
             path(
                 '<int:session_id>/notify/',
-                self.admin_site.adamin_view(self.send_notification_action),
+                self.admin_site.admin_view(self.send_notification_action),
                 name='send-treatment-session-notification'
             ),
         ]
@@ -86,10 +90,6 @@ class TreatmentSessionAdmin(admin.ModelAdmin):
             treatment_session = TreatmentSession.objects.get(pk=session_id)
             response = send_treatment_session_notification(treatment_session)
 
-            # Update notification status
-            treatment_session.notification_sent = True
-            treatment_session.notified_at = timezone.now()
-            treatment_session.save()
 
             self.message_user(
                 request,
@@ -101,4 +101,13 @@ class TreatmentSessionAdmin(admin.ModelAdmin):
         return HttpResponseRedirect(
             reverse('admin:appointments_treatmentsession_changelist')
         )
+    
+# Readonly admin for AppointmentRequest
+@admin.register(AppointmentRequest)
+class AppointmentRequestAdmin(admin.ModelAdmin):
+    list_display = ['user', 'requested_at', 'preferred_date', 'status']
+    list_filter = ['status', 'requested_at', 'preferred_date']
+    search_fields = ['user__phone_number', 'user__full_name']
+    readonly_fields = ['user', 'requested_at', 'preferred_date', 'notes', 'status']
+    ordering = ['-requested_at']
             

@@ -4,6 +4,7 @@ from .views import AppointmentViewSet
 app_name = 'appointments'
 
 router = DefaultRouter()
-router.register(r"", AppointmentViewSet, basename="appointment")
+# Include the query is_whatsapp to check if the request is coming from the whatsapp or application
+router.register(r"<", AppointmentViewSet, basename="appointment")
 
 urlpatterns = router.urls

@@ -1,9 +1,7 @@
 from django.db import models
 from django.conf import settings
-from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.utils import timezone
-from .models import TreatmentSession
 from .notification_service import send_treatment_session_notification
 
 User = settings.AUTH_USER_MODEL
@@ -43,9 +41,45 @@ class Appointment(models.Model):
     def __str__(self):
         return f"Appointment for {self.user.full_name} on {self.scheduled_at}"
 
+class AppointmentRequest(models.Model):
+    """Appointment requests made by users"""
+    REQUEST_STATUS = [
+        ("pending", "Pending"),
+        ("approved", "Approved"),
+        ("rejected", "Rejected")
+    ]
+
+    SOURCE = [
+        ("whatsapp", "WhatsApp"),
+        ("app", "App"),
+    ]
+
+    start_time_availibility = models.DateTimeField()
+    end_time_availibility = models.DateTimeField()
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="appointment_requests"
+    )
+    phone_number = models.CharField(max_length=15, null=True, blank=True)
+    source = models.CharField(
+        max_length=20,
+        choices=SOURCE,
+        default="app",
+        db_index=True
+    )
+    status = models.CharField(
+        max_length=20,
+        choices=REQUEST_STATUS,
+        default="pending",
+        db_index=True)
+    additional_notes = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
 class FollowUp(models.Model):
     """Follow-up visits/notes for an appointment"""
-    appointment = models.ForiegnKey(
+    appointment = models.ForeignKey(
         Appointment,
         on_delete=models.CASCADE,
         related_name="follow_ups"
@@ -62,7 +96,7 @@ class FollowUp(models.Model):
     def __str__(self):
         return f"Follow-up for {self.appointment} on {self.scheduled_at}"
 
-class TreatmentPlan(models.Modeel):
+class TreatmentPlan(models.Model):
     """Treatment plans associated with an appointment"""
     TREATMENT_TYPES = [
         ("braces", "Braces"),
@@ -72,7 +106,7 @@ class TreatmentPlan(models.Modeel):
         ("whitening", "Whitening"),
     ]
 
-    user = models.ForiegnKey(
+    user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
         related_name="treatment_plans"
@@ -94,7 +128,7 @@ class TreatmentPlan(models.Modeel):
     total_amount = models.DecimalField(max_digits=10, decimal_places=2)
     amount_paid = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
 
-    estimated_duration_days = models.IntegerField()
+    estimated_duration_months = models.IntegerField()
     is_completed = models.BooleanField(default=False)
 
     created_at = models.DateTimeField(auto_now_add=True)
@@ -117,13 +151,6 @@ class TreatmentSession(models.Model):
         TreatmentPlan,
         on_delete=models.CASCADE,
         related_name="sessions"
-    )
-    appointment = models.ForeignKey(
-        Appointment,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name="treatment_sessions"
     )
     
     session_number = models.PositiveIntegerField()
@@ -177,12 +204,3 @@ class Prescription(models.Model):
 
     def __str__(self):
         return f"Prescription for {self.appointment or self.treatment_plan}"
-    
-    @receiver(post_save, sender=TreatmentSession)
-    def auto_notify_treatment_session(sender, instance, created, **kwargs):
-        """Automatically send WhatsApp notification when treatment session is created"""
-        if created and not instance.notification_sent:
-            response = send_treatment_session_notification(instance)
-            instance.notification_sent = True
-            instance.notified_at = timezone.now()
-            instance.save(update_fields=['notification_sent', 'notified_at'])

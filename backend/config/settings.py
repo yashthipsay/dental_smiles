@@ -57,6 +57,7 @@ INSTALLED_APPS = [
     "apps.reviews.apps.ReviewsConfig",
     "apps.common.apps.CommonConfig",
     "phone_auth.apps.PhoneAuthConfig",
+    "django_filters"
 ]
 
 AUTH_USER_MODEL = "accounts.User"
