@@ -25,13 +25,14 @@ class UserManager(BaseUserManager):
 
 class User(AbstractBaseUser, PermissionsMixin):
     phone_number = models.CharField(max_length=15, unique=True)
-    full_name = models.CharField(max_length=255)
+    first_name = models.CharField(max_length=255)
+    last_name = models.CharField(max_length=255)
     
     email = models.EmailField(unique=True, null=True, blank=True)
     age = models.PositiveSmallIntegerField(null=True, blank=True)
     birth_date = models.DateField(null=True, blank=True)
 
-    is_student = models.BooleanField(default=True)
+    is_student = models.BooleanField(default=False)
 
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
@@ -42,10 +43,10 @@ class User(AbstractBaseUser, PermissionsMixin):
     objects = UserManager()
 
     USERNAME_FIELD = 'phone_number'
-    REQUIRED_FIELDS = ['full_name']
+    REQUIRED_FIELDS = ['first_name', 'last_name']
 
     def __str__(self):
-        return self.phone_number
+        return f"{self.first_name} {self.last_name} ({self.phone_number})"
 
 class StudentProfile(models.Model):
     user = models.OneToOneField(

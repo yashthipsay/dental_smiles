@@ -39,23 +39,23 @@ class Appointment(models.Model):
         ordering = ['-scheduled_at']
 
     def __str__(self):
-        return f"Appointment for {self.user.full_name} on {self.scheduled_at}"
+        return f"Appointment for {self.user.first_name} {self.user.last_name} on {self.scheduled_at}"
 
 class AppointmentRequest(models.Model):
     """Appointment requests made by users"""
     REQUEST_STATUS = [
         ("pending", "Pending"),
-        ("approved", "Approved"),
-        ("rejected", "Rejected")
+        ("confirmed", "Confirmed"),
+        ("canceled", "Canceled")
     ]
 
     SOURCE = [
         ("whatsapp", "WhatsApp"),
         ("app", "App"),
     ]
-
-    start_time_availibility = models.DateTimeField()
-    end_time_availibility = models.DateTimeField()
+    # nullable field
+    day_availability = models.DateField(null=True, blank=True)   
+    # Patient will not specify start time availability and end time availability. We will store it from the admin panel
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
@@ -143,7 +143,7 @@ class TreatmentPlan(models.Model):
         return self.total_amount - self.amount_paid
     
     def __str__(self):
-        return f"{self.treatment_type} plan for {self.user.full_name}"
+        return f"{self.treatment_type} plan for {self.user.first_name} {self.user.last_name}"
     
 class TreatmentSession(models.Model):
     """Individual sessions/phases of a treatment plan"""
@@ -170,6 +170,42 @@ class TreatmentSession(models.Model):
     class Meta:
         ordering = ['session_number']
         unique_together = ['treatment_plan', 'session_number']
+
+    def save(self, *args, **kwargs):
+        # Check if this is an existing session (update) or new session (create)
+        if self.pk:
+            # This is an update - get the old instance
+            old_instance = TreatmentSession.objects.get(pk=self.pk)
+            old_amount_received = old_instance.amount_received
+            
+            # Calculate the difference
+            amount_difference = self.amount_received - old_amount_received
+            
+            # Update treatment plan amount paid with the difference
+            self.treatment_plan.amount_paid += amount_difference
+            self.treatment_plan.save()
+        else:
+            # This is a new session (create)
+            if not self.session_number:
+                last_session = TreatmentSession.objects.filter(
+                    treatment_plan=self.treatment_plan
+                ).order_by('-session_number').first()
+
+                if last_session:
+                    self.session_number = last_session.session_number + 1
+                else:
+                    self.session_number = 1
+
+            if not self.amount_received:
+                self.amount_received = 0
+            
+            # Add the new amount to treatment plan
+            updated_amount = self.treatment_plan.amount_paid + self.amount_received
+            self.treatment_plan.amount_paid = updated_amount
+            self.treatment_plan.save()
+
+        super().save(*args, **kwargs)
+    
 
     def __str__(self):
         return f"Session {self.session_number} - {self.treatment_plan}"
@@ -201,6 +237,9 @@ class Prescription(models.Model):
 
     class Meta:
         ordering = ['-issued_at']
+
+
+
 
     def __str__(self):
         return f"Prescription for {self.appointment or self.treatment_plan}"

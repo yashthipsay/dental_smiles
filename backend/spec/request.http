@@ -100,3 +100,17 @@ Content-Type: application/json
 ### Delete your review
 DELETE {{baseUrl}}/reviews/1/
 Authorization: Bearer {{accessToken}}
+
+### =====================
+### Appointments - WhatsApp (No Auth Required)
+### =====================
+
+### Create appointment request via WhatsApp (Public - No Token Needed)
+# @name whatsappAppointmentRequest
+POST {{baseUrl}}/appointments/requests/?source=whatsapp
+Content-Type: application/json
+
+{
+    "phone_number": "+913232323232",
+    "additional_notes": "braces treatment appointment"
+}

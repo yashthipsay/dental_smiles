@@ -91,7 +91,10 @@ class VerifyOTPView(APIView):
                     'is_new_user': True
                 }, status=status.HTTP_400_BAD_REQUEST)
             
-            user = User.objects.create_user(phone_number=phone_number, full_name=full_name)
+            user = User.objects.create_user(phone_number=phone_number,
+                                            first_name=full_name.split(" ")[0] if full_name else "User",
+                                            last_name=" ".join(full_name.split()[1:]) if full_name and len(full_name.split()) > 1 else phone_number
+                                            )
             is_new_user = True
 
         # Link OTP profile to user if not linked
@@ -115,7 +118,8 @@ class VerifyOTPView(APIView):
             'user': {
                 'id': user.id,
                 'phone_number': user.phone_number,
-                'full_name': user.full_name,
+                'first_name': user.first_name,
+                'last_name': user.last_name,
                 'email': user.email,
                 'age': user.age,
                 'birth_date': str(user.birth_date) if user.birth_date else None,

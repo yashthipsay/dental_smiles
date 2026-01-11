@@ -1,35 +1,61 @@
 from rest_framework import viewsets, permissions
 from django.contrib.auth import get_user_model
 from .models import Review
+from django.http import Http404
 from .serializers import ReviewSerializer
+from rest_framework import status
+
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import authentication, permissions
 
 User = get_user_model()
 
-class IsOwnerOrAdmin(permissions.BasePermission):
-    """
-    Allow owners to manage their reviews ad admins to manage all.
-    """
-    def has_object_permission(self, request, view, obj):
-        if request.user and (request.user.is_staff or request.user.is_superuser):
-            return True
-        return obj.user == request.user
 
-class ReviewViewSet(viewsets.ModelViewSet):
+class ReviewList(APIView):
     """
-    list: List all reviews
-    create: Submit a new review
-    retrieve: Get a specific review.
-    update/partial_update: Modify your review (only yours unless admin).
-    destroy: Delete your review (only yours unless admin).
-    """
-
-    serializer_class = ReviewSerializer
-    permission_classes = [permissions.IsAuthenticated, IsOwnerOrAdmin]
-
-    def get_queryset(self):
-        return Review.objects.all().order_by('-created_at')
     
-    def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
+    """
+
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, format=None):
+        reviews = Review.objects.all()
+        serializer = ReviewSerializer(reviews, many=True)
+        return Response(serializer.data)
+    
+    def post(self, request, format=None):
+        serializer = ReviewSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save(user=request.user)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+class ReviewDetail(APIView):
+    """
+    """
+    def get_object(self, pk):
+        try:
+            return Review.objects.get(pk=pk)
+        except Review.DoesNotExist:
+            raise Http404
         
+    def get(self, request, pk, format=None):
+        review = self.get_object(pk)
+        serializer = ReviewSerializer(review)
+        return Response(serializer.data)
+    
+    def put(self, request, pk, format=None):
+        review = self.get_object(pk)
+        serializer = ReviewSerializer(review, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    def delete(self, request, pk, format=None):
+        review = self.get_object(pk)
+        review.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
 

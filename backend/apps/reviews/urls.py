@@ -1,9 +1,10 @@
-from rest_framework.routers import DefaultRouter
-from .views import ReviewViewSet
+from django.urls import path
+from rest_framework.urlpatterns import format_suffix_patterns
+from snippets import views
 
-app_name = 'reviews'
+urlpatterns = [
+    path("reviews/", views.ReviewList.as_view()),
+    path("reviews/<int:pk>/", views.ReviewDetail.as_view()),
+]
 
-router = DefaultRouter()
-router.register(r"", ReviewViewSet, basename="review")
-
-urlpatterns = router.urls
+urlpatterns = format_suffix_patterns(urlpatterns)

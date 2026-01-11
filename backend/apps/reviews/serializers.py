@@ -8,3 +8,6 @@ class ReviewSerializer(serializers.ModelSerializer):
         model = Review
         fields = ["id", "rating", "comment", "user_name", "created_at"]
         read_only_fields = ["id", "user_name", "created_at"]
+
+    def get_user_name(self, obj):
+        return f"{obj.user.first_name} {obj.user.last_name}".strip()

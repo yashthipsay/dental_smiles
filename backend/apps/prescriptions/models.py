@@ -19,5 +19,5 @@ class Prescription(models.Model):
         ordering = ['-issued_at']
 
     def __str__(self):
-        return f"Prescription for {self.user.full_name}"
+        return f"Prescription for {self.user.first_name} {self.user.last_name}"
             
