@@ -47,6 +47,7 @@ class AppointmentViewSet(viewsets.ModelViewSet):
         if user.is_staff or user.is_superuser:
             return Appointment.objects.all()
         return Appointment.objects.filter(user=user)
+
         
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)

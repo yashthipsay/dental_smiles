@@ -1,13 +1,20 @@
+from datetime import timedelta
 from rest_framework import serializers
 from .models import Appointment, AppointmentRequest
 
 class AppointmentSerializer(serializers.ModelSerializer):
+    user_payment_method = serializers.CharField(source='user.payment_method')
     user_name = serializers.CharField(source='user.first_name', read_only=True)
-    
+
+
     class Meta:
         model = Appointment
-        fields = ["id", "user_name", "scheduled_at", "status", "notes", "created_at"]
+        fields = ["id", "user_name", "scheduled_at", "status", "notes", "user_payment_method", "created_at"]
         read_only_fields = ["id", "user_name", "created_at"]
+
+    def get_user_payment_method(self, obj):
+        if obj.user.payment_method:
+            return f"Paid using {obj.user.payment_method}"
 
 class AppointmentRequestSerializer(serializers.ModelSerializer):
     user_name = serializers.CharField(read_only=True)
@@ -28,6 +35,24 @@ class AppointmentRequestSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ["id", "user_name", "user_phone", "created_at", "status", "source"]
 
+    def validate(self, attrs):
+        scheduled_at = attrs.get('day_availability')
+        if scheduled_at:
+            end_time = scheduled_at + timedelta(minutes = 30)
+
+            qs = Appointment.objects.filter(
+                scheduled_at__lt=end_time,
+                end_time__gt=scheduled_at
+            )
+
+            # Exclude self in case of update
+            if self.instance:
+                qs = qs.exclude(id=self.instance.id)
+
+            if qs.exists():
+                raise serializers.ValidationError("The appointment time overlaps with an existing appointment. Choose a different time.")
+        return attrs
+    
     def get_user_name(self, obj):
         if obj.user:
             return f"{obj.user.first_name} {obj.user.last_name}".strip()

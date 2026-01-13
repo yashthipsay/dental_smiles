@@ -9,7 +9,7 @@ from .notification_service import send_treatment_session_notification
 
 @admin.register(Appointment)
 class AppointmentAdmin(admin.ModelAdmin):
-    list_display = ['get_user_full_name', 'get_user_phone_number', 'scheduled_at', 'status', 'created_at']
+    list_display = ['get_user_full_name', 'get_user_phone_number', 'scheduled_at', 'end_time', 'status', 'payment_method', 'created_at']
     list_filter = ['status', 'scheduled_at', 'created_at']
     search_fields = ['user__phone_number', 'user__first_name', 'user__last_name']
     readonly_fields = ['created_at', 'updated_at']
@@ -21,7 +21,7 @@ class AppointmentAdmin(admin.ModelAdmin):
             'fields': ('user',)
         }),
         ('Appointment Details', {
-            'fields': ('scheduled_at', 'status', 'notes')
+            'fields': ('scheduled_at', 'end_time', 'status', 'payment_method', 'notes')
         }),
         ('Timestamps', {
             'fields': ('created_at', 'updated_at'),

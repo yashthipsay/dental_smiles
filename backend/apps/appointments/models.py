@@ -2,6 +2,7 @@ from django.db import models
 from django.conf import settings
 from django.dispatch import receiver
 from django.utils import timezone
+from django.core.exceptions import ValidationError
 from .notification_service import send_treatment_session_notification
 
 User = settings.AUTH_USER_MODEL
@@ -22,11 +23,14 @@ class Appointment(models.Model):
         related_name="appointments"
     )
     scheduled_at = models.DateTimeField()
+    end_time = models.DateTimeField(null=True, blank=True)
     status = models.CharField(
         max_length=20,
         choices=APPOINTMENT_STATUS,
         db_index=True
     )
+    payment_method = models.CharField(max_length=50, null=True, blank=True,
+                                    choices=[("upi", "UPI"), ("card", "Debit Card/ Credit Card"), ("bank_transfer", "Bank Transfer(NEFT/IMPS)"),("cash", "Cash")])
     notes = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -37,6 +41,29 @@ class Appointment(models.Model):
             models.Index(fields=['user', 'scheduled_at']),
         ]
         ordering = ['-scheduled_at']
+
+    def clean(self):
+        if not self.scheduled_at:
+            return
+        
+        end_time = self.scheduled_at + timezone.timedelta(minutes=30)
+
+        qs = Appointment.objects.filter(
+            scheduled_at__lt=end_time,
+            end_time__gt=self.scheduled_at
+        )
+
+        if self.pk:
+            qs = qs.exclude(id=self.pk)
+
+        if qs.exists():
+            raise ValidationError("The appointment time overlaps with an existing appointment. Choose a different time.")
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        if self.scheduled_at:
+            self.end_time = self.scheduled_at + timezone.timedelta(minutes=30)
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"Appointment for {self.user.first_name} {self.user.last_name} on {self.scheduled_at}"
