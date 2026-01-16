@@ -1,10 +1,11 @@
-from datetime import timedelta
+from datetime import timedelta, timezone
 from rest_framework import serializers
 from .models import Appointment, AppointmentRequest
 
 class AppointmentSerializer(serializers.ModelSerializer):
     user_payment_method = serializers.CharField(source='user.payment_method')
     user_name = serializers.CharField(source='user.first_name', read_only=True)
+    scheduled_at = serializers.DateTimeField()
 
 
     class Meta:
@@ -15,6 +16,12 @@ class AppointmentSerializer(serializers.ModelSerializer):
     def get_user_payment_method(self, obj):
         if obj.user.payment_method:
             return f"Paid using {obj.user.payment_method}"
+        
+    def validate_scheduled_at(self, value):
+        if value < timezone.now():
+            raise serializers.ValidationError("Scheduled time cannot be in the past.")
+
+        
 
 class AppointmentRequestSerializer(serializers.ModelSerializer):
     user_name = serializers.CharField(read_only=True)
@@ -52,6 +59,11 @@ class AppointmentRequestSerializer(serializers.ModelSerializer):
             if qs.exists():
                 raise serializers.ValidationError("The appointment time overlaps with an existing appointment. Choose a different time.")
         return attrs
+    
+    def validate_phone_number(self, value):
+        if not value.replace('+', '').replace('-', '').replace(' ', '').isdigit():
+            raise serializers.ValidationError("Invalid phone number format")
+        return value
     
     def get_user_name(self, obj):
         if obj.user:

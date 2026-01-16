@@ -111,6 +111,6 @@ POST {{baseUrl}}/appointments/requests/?source=whatsapp
 Content-Type: application/json
 
 {
-    "phone_number": "+913232323232",
+    "phone_number": "+916767676767",
     "additional_notes": "braces treatment appointment"
 }

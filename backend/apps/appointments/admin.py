@@ -4,6 +4,8 @@ from django.urls import reverse, path
 from django.shortcuts import redirect
 from django.http import HttpResponseRedirect
 from django.utils import timezone
+from django.db.models import F
+from django.template.response import TemplateResponse
 from .models import AppointmentRequest, Appointment, TreatmentSession, TreatmentPlan
 from .notification_service import send_treatment_session_notification
 
@@ -15,6 +17,7 @@ class AppointmentAdmin(admin.ModelAdmin):
     readonly_fields = ['created_at', 'updated_at']
     ordering = ['-scheduled_at']
     autocomplete_fields = ['user']
+    change_list_template = 'admin/appointments_changelist.html'
 
     fieldsets = (
         ('Patient Information', {
@@ -28,6 +31,43 @@ class AppointmentAdmin(admin.ModelAdmin):
             'classes': ('collapse',)
         })
     )
+
+    def get_urls(self):
+        urls = super().get_urls()
+        custom_urls = [
+            path(
+                "calender/",
+                self.admin_site.admin_view(self.calender_view),
+                name="appointments-calender",
+            ),
+        ]
+        return custom_urls + urls
+    
+    def calender_view(self, request):
+        appointments = Appointment.objects.all().values(
+            'id', 
+            'scheduled_at',
+            'end_time',
+            'status',
+            user_name = F('user__first_name')
+        )
+
+        events = [
+            {            
+            'id': apt['id'],
+            'title': f"{apt['user_name']} - {apt['status']}",
+            'start': apt['scheduled_at'].isoformat(),
+            'end': apt['end_time'].isoformat() if apt['end_time'] else None,
+            'backgroundColor': '#0275d8' if apt['status'] == 'confirmed' else '#ffc107',
+            }
+            for apt in appointments
+            if apt['scheduled_at']
+        ]
+        return TemplateResponse(
+            request,
+            "admin/appointments_calender.html",
+            {'events': events}
+        )
     
     def get_user_full_name(self, obj):
         if obj.user:
@@ -218,17 +258,6 @@ class AppointmentRequestAdmin(admin.ModelAdmin):
                 '<span style="color: red;">✗ Rejected</span>'
             )
     create_appointment_button.short_description = 'Actions'
-
-    def get_urls(self):
-        urls = super().get_urls()
-        custom_urls = [
-            path(
-                '<int:request_id>/create-appointment/',
-                self.admin_site.admin_view(self.create_appointment_view),
-                name='create-appointment-from-request'
-            )
-        ]
-        return custom_urls + urls
     
     def create_appointment_view(self, request, request_id):
         """Redirect to appointment creation with pre-filled user data"""

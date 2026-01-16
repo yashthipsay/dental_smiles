@@ -1,0 +1,75 @@
+{% extends "admin/base_site.html" %}
+
+{% block content %}
+<h1>Appointments Calendar</h1>
+<div id="calendar"></div>
+
+<script src='https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.20/index.global.min.js'></script>
+<script src='https://cdn.jsdelivr.net/npm/@fullcalendar/daygrid@6.1.20/index.global.min.js'></script>
+<script src='https://cdn.jsdelivr.net/npm/@fullcalendar/timegrid@6.1.20/index.global.min.js'></script>
+
+<style>
+  #calendar {
+    max-width: 1300px;
+    margin: 0 auto;
+    font-size: 13px;
+  }
+
+  .fc-event {
+    padding: 6px !important;
+    border: none !important;
+    border-radius: 4px !important;
+  }
+
+  .fc-event-title {
+    font-weight: bold;
+    color: white !important;
+    font-size: 12px !important;
+    padding: 4px !important;
+  }
+
+  .fc-daygrid-event {
+    margin: 2px !important;
+  }
+
+  .fc-col-header-cell {
+    padding: 10px 0 !important;
+    font-size: 13px !important;
+  }
+
+  .fc-daygrid-day {
+    height: 120px !important;
+  }
+
+  .fc-daygrid-day-frame {
+    min-height: 120px !important;
+  }
+
+  .fc-event-bg {
+    opacity: 1 !important;
+  }
+</style>
+
+{{ events|json_script:"calendar-events" }}
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const calendarEl = document.getElementById('calendar');
+  const events = JSON.parse(document.getElementById('calendar-events').textContent);
+  
+  const calendar = new FullCalendar.Calendar(calendarEl, {
+    initialView: 'dayGridMonth',
+    headerToolbar: {
+      left: 'prev,next today',
+      center: 'title',
+      right: 'dayGridMonth,timeGridWeek,timeGridDay'
+    },
+    events: events,
+    eventDisplay: 'block',
+    displayEventTime: true,
+  });
+  
+  calendar.render();
+});
+</script>
+{% endblock %}
