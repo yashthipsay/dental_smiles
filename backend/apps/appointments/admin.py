@@ -1,4 +1,5 @@
 from django.contrib import admin
+from unfold.admin import ModelAdmin
 from django.utils.html import format_html
 from django.urls import reverse, path
 from django.shortcuts import redirect
@@ -11,7 +12,7 @@ from .notification_service import send_treatment_session_notification
 from ..prescriptions.models import Prescription
 
 @admin.register(Appointment)
-class AppointmentAdmin(admin.ModelAdmin):
+class AppointmentAdmin(ModelAdmin):
     list_display = ['get_user_full_name', 'get_user_phone_number', 'get_prescriptions','latest_prescription', 'create_prescription_button', 'scheduled_at', 'end_time', 'status', 'payment_method', 'created_at']
     list_filter = ['status', 'scheduled_at', 'created_at']
     search_fields = ['user__phone_number', 'user__first_name', 'user__last_name']
@@ -167,7 +168,7 @@ class AppointmentAdmin(admin.ModelAdmin):
 
 
 @admin.register(TreatmentPlan)
-class TreatmentPlanAdmin(admin.ModelAdmin):
+class TreatmentPlanAdmin(ModelAdmin):
     list_display = ['get_full_name', 'treatment_type', 'get_prescriptions', 'get_latest_prescription', 'create_prescription_button', 'total_amount', 'amount_paid', 'estimated_duration_months', 'is_completed', 'created_at']
     list_filter = ['treatment_type', 'is_completed', 'created_at']
     search_fields = ['user__phone_number', 'user__first_name', 'user__last_name']
@@ -221,7 +222,7 @@ class TreatmentPlanAdmin(admin.ModelAdmin):
 
 
 @admin.register(TreatmentSession)
-class TreatmentSessionAdmin(admin.ModelAdmin):
+class TreatmentSessionAdmin(ModelAdmin):
     list_display = ['get_user_name', 'get_treatment_type', 'session_number', 'scheduled_at', 'notification_status', 'notify_button']
     list_filter = ['treatment_plan__treatment_type', 'scheduled_at', 'notification_sent']
     search_fields = ['treatment_plan__user__phone_number', 'treatment_plan__user__first_name', 'treatment_plan__user__last_name']
@@ -304,7 +305,7 @@ class TreatmentSessionAdmin(admin.ModelAdmin):
     
 # Readonly admin for AppointmentRequest
 @admin.register(AppointmentRequest)
-class AppointmentRequestAdmin(admin.ModelAdmin):
+class AppointmentRequestAdmin(ModelAdmin):
     list_display = ['get_user_full_name', 'get_user_phone_number', 'created_at', 'status', 'source', 'create_appointment_button', 'created_at']
     list_filter = ['status', 'source', 'created_at']
     search_fields = ['user__phone_number', 'user__first_name', 'user__last_name']

@@ -1,8 +1,9 @@
 from django.contrib import admin
 from .models import PhoneOTP
+from unfold.admin import ModelAdmin
 
 @admin.register(PhoneOTP)
-class PhoneOTPAdmin(admin.ModelAdmin):
+class PhoneOTPAdmin(ModelAdmin):
     list_display = ['user', 'phone_number', 'is_verified', 'otp_created_at', 'created_at']
     list_filter = ['is_verified', 'created_at']
     search_fields = ['user__email', 'phone_number']

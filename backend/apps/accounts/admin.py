@@ -1,12 +1,28 @@
 from django.contrib import admin
+from unfold.admin import ModelAdmin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
+from django.contrib.auth.admin import GroupAdmin as BaseGroupAdmin
+from django.contrib.auth.models import Group
 from django.utils.html import format_html
 from django.urls import reverse, path
+from unfold.forms import AdminPasswordChangeForm, UserChangeForm, UserCreationForm
 from .models import User, StudentProfile
 from ..prescriptions.models import Prescription
 
+# Unregister the default Group admin and re-register with Unfold styling
+admin.site.unregister(Group)
+
+@admin.register(Group)
+class GroupAdmin(BaseGroupAdmin, ModelAdmin):
+    pass
+
 @admin.register(User)
-class UserAdmin(BaseUserAdmin):
+class UserAdmin(BaseUserAdmin, ModelAdmin):
+    # Forms loaded from `unfold.forms`
+    form = UserChangeForm
+    add_form = UserCreationForm
+    change_password_form = AdminPasswordChangeForm
+    
     # Adding prescriptions here
     list_display = ['phone_number', 'get_full_name', 'email', 'is_student', 'get_prescriptions', 'latest_prescription', 'create_prescription_button', 'is_active', 'created_at']
     list_filter = ['is_student', 'is_active', 'is_staff', 'is_superuser', 'created_at']
@@ -68,7 +84,7 @@ class UserAdmin(BaseUserAdmin):
         return button
 
 @admin.register(StudentProfile)
-class StudentProfileAdmin(admin.ModelAdmin):
+class StudentProfileAdmin(ModelAdmin):
     list_display = ['user', 'college_name', 'student_id', 'verified', 'verified_at']
     list_filter = ['verified', 'verified_at']
     search_fields = ['user__phone_number', 'user__first_name', 'user__last_name', 'college_name', 'student_id']

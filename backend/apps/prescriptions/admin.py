@@ -1,8 +1,9 @@
 from django.contrib import admin
+from unfold.admin import ModelAdmin
 from .models import Medicine, Prescription, PrescriptionItem
 
 @admin.register(Medicine)
-class MedicineAdmin(admin.ModelAdmin):
+class MedicineAdmin(ModelAdmin):
     list_display = ['name']
     search_fields = ['name']
     ordering = ['name']
@@ -17,7 +18,7 @@ class PrescriptionItemInline(admin.TabularInline):
     
 
 @admin.register(Prescription)
-class PrescriptionAdmin(admin.ModelAdmin):
+class PrescriptionAdmin(ModelAdmin):
     list_display = ['get_user_full_name', 'doctor_name', 'get_items_count', 'issued_at']
     list_filter = ['issued_at', 'doctor_name']
     search_fields = ['user__phone_number', 'user__first_name', 'user__last_name', 'doctor_name', 'notes']

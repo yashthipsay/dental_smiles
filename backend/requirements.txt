@@ -7,3 +7,4 @@ celery
 django-celery-beat
 django-filter
 gunicorn
+django-unfold
