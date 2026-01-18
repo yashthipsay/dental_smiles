@@ -8,13 +8,14 @@ from django.db.models import F
 from django.template.response import TemplateResponse
 from .models import AppointmentRequest, Appointment, TreatmentSession, TreatmentPlan
 from .notification_service import send_treatment_session_notification
+from ..prescriptions.models import Prescription
 
 @admin.register(Appointment)
 class AppointmentAdmin(admin.ModelAdmin):
-    list_display = ['get_user_full_name', 'get_user_phone_number', 'scheduled_at', 'end_time', 'status', 'payment_method', 'created_at']
+    list_display = ['get_user_full_name', 'get_user_phone_number', 'get_prescriptions','latest_prescription', 'create_prescription_button', 'scheduled_at', 'end_time', 'status', 'payment_method', 'created_at']
     list_filter = ['status', 'scheduled_at', 'created_at']
     search_fields = ['user__phone_number', 'user__first_name', 'user__last_name']
-    readonly_fields = ['created_at', 'updated_at']
+    readonly_fields = ['get_prescriptions', 'latest_prescription', 'create_prescription_button', 'created_at', 'updated_at']
     ordering = ['-scheduled_at']
     autocomplete_fields = ['user']
     change_list_template = 'admin/appointments_changelist.html'
@@ -31,6 +32,42 @@ class AppointmentAdmin(admin.ModelAdmin):
             'classes': ('collapse',)
         })
     )
+
+    def get_prescriptions(self, obj):
+        prescriptions = Prescription.objects.filter(appointment=obj)
+        if prescriptions:
+            url = reverse('admin:prescriptions_prescription_changelist')
+            return format_html(
+                '<a href="{}?appointment__id__exact={}"> View previous {} prescriptions </a>',
+                url,
+                obj.pk,
+                prescriptions.count()    
+            )
+        return "No prescriptions"
+    get_prescriptions.short_description = 'Prescriptions'
+
+    def latest_prescription(self, obj):
+        latest = Prescription.objects.filter(appointment=obj).order_by('-issued_at').first()
+        if latest:
+            url = reverse('admin:prescriptions_prescription_change', args=[latest.pk])
+            return format_html(
+                '<a href="{}">Prescription {} - {}</a>',
+                url,
+                latest.id,
+                latest.issued_at.strftime("%Y-%m-%d"),
+            )
+        return "No prescriptions"
+    latest_prescription.short_description = 'Latest Prescription'
+
+    def create_prescription_button(self, obj):
+        """Creates a prescription for that appointment and user"""
+        button = format_html(
+            '<a class="button" href="{}?user={}&appointment={}">Create Prescription</a>',
+            reverse('admin:prescriptions_prescription_add'),
+            obj.user.pk,
+            obj.pk
+        )
+        return button
 
     def get_urls(self):
         urls = super().get_urls()
@@ -81,6 +118,11 @@ class AppointmentAdmin(admin.ModelAdmin):
         return obj.user.phone_number if obj.user else 'N/A'
     get_user_phone_number.short_description = 'Phone Number'
 
+    # def create_prescription_button(self, obj):
+
+    #     if obj.user.prescription
+    #     return format_html()
+
     def get_changeform_initial_data(self, request):
         """Pre-fill user from query parameter"""
         initial = super().get_changeform_initial_data(request)
@@ -126,17 +168,57 @@ class AppointmentAdmin(admin.ModelAdmin):
 
 @admin.register(TreatmentPlan)
 class TreatmentPlanAdmin(admin.ModelAdmin):
-    list_display = ['get_full_name', 'treatment_type', 'total_amount', 'amount_paid', 'estimated_duration_months', 'is_completed', 'created_at']
+    list_display = ['get_full_name', 'treatment_type', 'get_prescriptions', 'get_latest_prescription', 'create_prescription_button', 'total_amount', 'amount_paid', 'estimated_duration_months', 'is_completed', 'created_at']
     list_filter = ['treatment_type', 'is_completed', 'created_at']
     search_fields = ['user__phone_number', 'user__first_name', 'user__last_name']
-    readonly_fields = ['created_at']
+    readonly_fields = [ 'get_prescriptions', 'get_latest_prescription', 'created_at']
     ordering = ['-created_at']
+    autocomplete_fields = ['user', 'initial_appointment']
 
     def get_full_name(self, obj):
         if obj.user:
             name = [obj.user.first_name if obj.user.first_name else '', obj.user.last_name if obj.user.last_name else '']
             return ' '.join(name).strip()
         return 'N/A'
+
+    def get_prescriptions(self, obj):
+        prescriptions = Prescription.objects.filter(treatment_plan=obj)
+        if prescriptions:
+            url = reverse('admin:prescriptions_prescription_changelist')
+            return format_html(
+                '<a href="{}?appointment__id__exact={}"> View previous {} prescriptions </a>',
+                url,
+                obj.initial_appointment.pk if obj.initial_appointment else '',
+                prescriptions.count()    
+            )
+        return "No prescriptions"
+    get_prescriptions.short_description = 'Prescriptions'    
+
+    def get_latest_prescription(self, obj):
+        latest = Prescription.objects.filter(treatment_plan=obj).order_by('-issued_at').first()
+        if latest:
+            url = reverse('admin:prescriptions_prescription_change', args=[latest.pk])
+            return format_html(
+                '<a href="{}">Prescription {} - {}</a>',
+                url,
+                latest.id,
+                latest.issued_at.strftime("%Y-%m-%d"),
+            )
+        return "No prescriptions"
+    get_latest_prescription.short_description = 'Latest Prescription'
+
+    def create_prescription_button(self, obj):
+        """Creates a prescription for that treatment plan and user"""
+        button = format_html(
+            '<a class="button" href="{}?user={}&appointment={}&treatment_plan={}">Create Prescription</a>',
+            reverse('admin:prescriptions_prescription_add'),
+            obj.user.pk,
+            obj.initial_appointment.pk if obj.initial_appointment else '',
+            obj.pk
+        )
+        return button
+    create_prescription_button.short_description = 'Create Prescription'
+
 
 @admin.register(TreatmentSession)
 class TreatmentSessionAdmin(admin.ModelAdmin):
@@ -258,14 +340,3 @@ class AppointmentRequestAdmin(admin.ModelAdmin):
                 '<span style="color: red;">✗ Rejected</span>'
             )
     create_appointment_button.short_description = 'Actions'
-    
-    def create_appointment_view(self, request, request_id):
-        """Redirect to appointment creation with pre-filled user data"""
-        try:
-            appointment_request = AppointmentRequest.objects.get(pk=request_id)
-            return HttpResponseRedirect(
-                f"{reverse('admin:appointments_appointment_add')}?user={appointment_request.user.pk}&request_id={request_id}"
-            )
-        except AppointmentRequest.DoesNotExist:
-            self.message_user(request, "Appointment request not found", level='error')
-            return HttpResponseRedirect(reverse('admin:appointments_appointmentrequest_changelist'))

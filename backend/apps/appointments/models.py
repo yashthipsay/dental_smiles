@@ -237,36 +237,3 @@ class TreatmentSession(models.Model):
     def __str__(self):
         return f"Session {self.session_number} - {self.treatment_plan}"
 
-
-class Prescription(models.Model):
-    """Prescriptions linked to appointments"""
-    appointment = models.ForeignKey(
-        Appointment,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name="prescriptions"
-    )
-    treatment_plan = models.ForeignKey(
-        TreatmentPlan,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name="prescriptions"
-    )
-    
-    doctor_name = models.CharField(max_length=255)
-    notes = models.TextField()
-    medications = models.JSONField(default=list, blank=True)  # Store as list of dicts
-    
-    issued_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        ordering = ['-issued_at']
-
-
-
-
-    def __str__(self):
-        return f"Prescription for {self.appointment or self.treatment_plan}"

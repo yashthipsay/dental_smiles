@@ -9,7 +9,20 @@ class Prescription(models.Model):
         on_delete=models.CASCADE,
         related_name="prescriptions"
     )
-
+    appointment = models.ForeignKey(
+        'appointments.Appointment',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="prescriptions"
+    )
+    treatment_plan = models.ForeignKey(
+        'appointments.TreatmentPlan',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="prescriptions"
+    )
     doctor_name = models.CharField(max_length=255)
     notes = models.TextField()
 
