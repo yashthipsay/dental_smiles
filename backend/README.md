@@ -13,7 +13,7 @@ This is the backend API for the Dental Smiles clinic management system, built wi
 Build and start the containers (Django, PostgreSQL, Redis, Celery):
 
 ```bash
-docker compose up --build
+nano ~/.docker/config.json
 
 # Create migration files based on model changes
 docker compose exec web python manage.py makemigrations
@@ -25,3 +25,6 @@ docker compose exec web python manage.py migrate
 ## To access the Django admin panel at http://localhost:8000/admin/:
 
 docker compose exec web python manage.py createsuperuser
+
+#   
+docker compose exec web python manage.py collectstatic --noinput

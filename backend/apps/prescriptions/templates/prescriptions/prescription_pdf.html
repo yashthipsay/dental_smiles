@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Digital Patient Prescription - Medical Management System</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;family=Playfair+Display:wght@700&amp;family=Material+Icons&amp;display=swap" rel="stylesheet"/>
+<script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              primary: "#0079b8", // Professional Blue from image
+              secondary: "#a4ce11", // Lime Green from image
+              "background-light": "#f8fafc",
+              "background-dark": "#0f172a",
+            },
+            fontFamily: {
+              display: ["Playfair Display", "serif"],
+              sans: ["Inter", "sans-serif"],
+            },
+            borderRadius: {
+              DEFAULT: "0.5rem",
+            },
+          },
+        },
+      };
+    </script>
+<style>
+        .rx-symbol {
+            font-family: 'Playfair Display', serif;
+            font-size: 3rem;
+            color: #a4ce11;
+        }
+        .wave-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 180px;
+            overflow: hidden;
+            z-index: 0;
+        }
+        .wave-footer {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 120px;
+            overflow: hidden;
+            z-index: 0;
+            transform: rotate(180deg);
+        }
+        @media print {
+            .no-print { display: none; }
+            body { background: white !important; }
+            .prescription-card { box-shadow: none !important; border: none !important; }
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-sans text-slate-800 dark:text-slate-200 min-h-screen transition-colors duration-300">
+<nav class="no-print sticky top-0 z-50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 px-6 py-3 flex justify-between items-center">
+<div class="flex items-center gap-2">
+<span class="material-icons text-primary">medical_services</span>
+<span class="font-bold text-lg tracking-tight">MedTrack Pro</span>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" onclick="document.documentElement.classList.toggle('dark')">
+<span class="material-icons text-slate-600 dark:text-slate-400">dark_mode</span>
+</button>
+<button class="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-lg font-medium hover:bg-opacity-90 transition-all shadow-sm" onclick="window.print()">
+<span class="material-icons text-sm">print</span>
+                Print Prescription
+            </button>
+</div>
+</nav>
+<div class="container mx-auto max-w-5xl py-12 px-4 relative">
+<div class="prescription-card relative overflow-hidden bg-white dark:bg-slate-900 shadow-2xl rounded-xl border border-slate-200 dark:border-slate-800 min-h-[1100px] flex flex-col">
+<div class="wave-container pointer-events-none">
+<svg preserveAspectRatio="none" style="height: 100%; width: 100%;" viewBox="0 0 500 150">
+<path class="fill-primary" d="M0.00,49.98 C149.99,150.00 349.20,-49.98 500.00,49.98 L500.00,0.00 L0.00,0.00 Z"></path>
+<path class="fill-secondary opacity-40" d="M0.00,60.00 C150.00,160.00 350.00,-30.00 500.00,60.00 L500.00,10.00 L0.00,10.00 Z"></path>
+</svg>
+</div>
+<header class="relative z-10 p-10 flex flex-col items-end text-right">
+<h1 class="text-4xl font-display text-primary dark:text-white mb-1">St. Lukes Hospital</h1>
+<p class="text-secondary font-medium tracking-wide mb-4">Excellence in Compassionate Care</p>
+<div class="text-sm text-slate-500 dark:text-slate-400 space-y-1">
+<p>123 Medical Plaza, Health District</p>
+<p>San Francisco, CA 94103</p>
+<p class="font-medium pt-2">Phone: +1 (555) 012-3456</p>
+<p>Email: contact@stlukeshospital.com</p>
+<p>Web: www.stlukes-medical.org</p>
+</div>
+</header>
+<div class="px-12 flex justify-between items-start mb-8 relative z-10">
+<div class="rx-symbol select-none">℞</div>
+<div class="w-full max-w-md pt-8">
+<div class="grid grid-cols-2 gap-y-4 text-sm">
+<div class="flex flex-col border-b border-dotted border-slate-300 dark:border-slate-700 pb-1">
+<span class="text-xs font-bold uppercase text-slate-400 mb-1">Patient Name</span>
+<span class="text-lg font-semibold">{{ prescription.user.first_name }} {{ prescription.user.last_name }}</span>
+</div>
+<div class="flex flex-col border-b border-dotted border-slate-300 dark:border-slate-700 pb-1 ml-4">
+<span class="text-xs font-bold uppercase text-slate-400 mb-1">Date</span>
+<span class="text-lg font-semibold">{{ prescription.issued_at|date:"M d, Y" }}</span>
+</div>
+<!-- <div class="flex flex-col border-b border-dotted border-slate-300 dark:border-slate-700 pb-1 mt-4">
+<span class="text-xs font-bold uppercase text-slate-400 mb-1">Age / Sex</span>
+<span class="text-lg font-semibold">42 Years / Male</span>
+</div>
+<div class="flex flex-col border-b border-dotted border-slate-300 dark:border-slate-700 pb-1 ml-4 mt-4">
+<span class="text-xs font-bold uppercase text-slate-400 mb-1">Patient ID</span>
+<span class="text-lg font-semibold">#SL-2023-8842</span>
+</div> -->
+</div>
+</div>
+</div>
+<main class="relative z-10 px-12 py-8 flex-grow">
+<div class="border-t-2 border-primary mb-6"></div>
+<table class="w-full text-left">
+<thead>
+<tr class="text-slate-400 uppercase text-xs tracking-widest border-b border-slate-100 dark:border-slate-800">
+<th class="py-4 font-semibold">Medication Name</th>
+<th class="py-4 font-semibold text-center">Morn</th>
+<th class="py-4 font-semibold text-center">Aft</th>
+<th class="py-4 font-semibold text-center">Eve</th>
+<th class="py-4 font-semibold text-center">Duration</th>
+<th class="py-4 font-semibold text-right">Notes</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+{% for item in prescription.items.all %}
+<tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+<td class="py-6">
+<div class="font-bold text-slate-800 dark:text-slate-100">{{ item.medicine.name }}</div>
+<div class="text-xs text-slate-500 italic">Medicine</div>
+</td>
+<td class="py-6 text-center">
+{% if item.morning %}
+<span class="material-icons text-primary text-xl">check_circle</span>
+{% else %}
+<span class="material-icons text-slate-200 dark:text-slate-700 text-xl">radio_button_unchecked</span>
+{% endif %}
+</td>
+<td class="py-6 text-center">
+{% if item.afternoon %}
+<span class="material-icons text-primary text-xl">check_circle</span>
+{% else %}
+<span class="material-icons text-slate-200 dark:text-slate-700 text-xl">radio_button_unchecked</span>
+{% endif %}
+</td>
+<td class="py-6 text-center">
+{% if item.evening %}
+<span class="material-icons text-primary text-xl">check_circle</span>
+{% else %}
+<span class="material-icons text-slate-200 dark:text-slate-700 text-xl">radio_button_unchecked</span>
+{% endif %}
+</td>
+<td class="py-6 text-center font-medium">{{ item.duration_days }} Days</td>
+<td class="py-6 text-right text-sm text-slate-500">{{ item.get_before_after_food_display }}</td>
+</tr>
+{% empty %}
+<tr class="h-24">
+<td class="text-center italic text-slate-400 text-sm" colspan="6">-- No medications prescribed --</td>
+</tr>
+{% endfor %}
+<tr class="h-24">
+<td class="text-center italic text-slate-400 text-sm" colspan="6">-- end of medication list --</td>
+</tr>
+</tbody>
+</table>
+<div class="mt-12 bg-slate-50 dark:bg-slate-800/30 p-6 rounded-lg border border-slate-100 dark:border-slate-800">
+<h3 class="text-xs font-bold uppercase text-slate-400 mb-3 flex items-center gap-2">
+<span class="material-icons text-sm">info</span>
+Doctor's Instructions &amp; Advice
+</h3>
+<p class="text-sm leading-relaxed text-slate-600 dark:text-slate-400">
+{{ prescription.notes|default:"No additional instructions provided." }}
+</p>
+</div>
+</main>
+<div class="relative z-10 px-12 py-12 flex justify-end">
+<div class="text-center w-64">
+<div class="h-16 flex items-end justify-center mb-2">
+<span class="font-display italic text-2xl text-slate-400 select-none opacity-50">{{ prescription.doctor_name }}</span>
+</div>
+<div class="border-t border-slate-300 dark:border-slate-700 pt-2">
+<p class="font-bold text-slate-800 dark:text-slate-100">{{ prescription.doctor_name }}</p>
+<p class="text-xs text-slate-500">{{ prescription.issued_at|date:"M d, Y" }}</p>
+</div>
+</div>
+</div>
+<div class="wave-footer pointer-events-none">
+<svg preserveAspectRatio="none" style="height: 100%; width: 100%;" viewBox="0 0 500 150">
+<path class="fill-primary" d="M0.00,49.98 C149.99,150.00 349.20,-49.98 500.00,49.98 L500.00,0.00 L0.00,0.00 Z"></path>
+<path class="fill-secondary opacity-40" d="M0.00,60.00 C150.00,160.00 350.00,-30.00 500.00,60.00 L500.00,10.00 L0.00,10.00 Z"></path>
+</svg>
+</div>
+</div>
+<footer class="no-print text-center mt-12 pb-12 text-slate-400 text-sm">
+<p>© 2023 Medical Management Systems Inc. All rights reserved.</p>
+<p class="mt-2 flex justify-center items-center gap-4">
+<a class="hover:text-primary transition-colors" href="#">Privacy Policy</a>
+<span class="w-1 h-1 bg-slate-300 rounded-full"></span>
+<a class="hover:text-primary transition-colors" href="#">Terms of Service</a>
+<span class="w-1 h-1 bg-slate-300 rounded-full"></span>
+<a class="hover:text-primary transition-colors" href="#">System Status</a>
+</p>
+</footer>
+</div>
+<div class="fixed top-0 left-0 w-full h-full pointer-events-none -z-10 opacity-5 dark:opacity-10 overflow-hidden">
+<div class="absolute -top-24 -right-24 w-96 h-96 bg-primary rounded-full blur-3xl"></div>
+<div class="absolute bottom-24 -left-24 w-64 h-64 bg-secondary rounded-full blur-3xl"></div>
+</div>
+
+</body></html>

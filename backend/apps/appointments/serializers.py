@@ -1,6 +1,6 @@
 from datetime import timedelta, timezone
 from rest_framework import serializers
-from .models import Appointment, AppointmentRequest
+from .models import Appointment, AppointmentRequest, TreatmentPlan, TreatmentSession
 
 class AppointmentSerializer(serializers.ModelSerializer):
     user_payment_method = serializers.CharField(source='user.payment_method')
@@ -69,3 +69,74 @@ class AppointmentRequestSerializer(serializers.ModelSerializer):
         if obj.user:
             return f"{obj.user.first_name} {obj.user.last_name}".strip()
         return 'N/A'
+    
+    class TreatmentPlanSerializer(serializers.ModelSerializer):
+        class Meta:
+            model = TreatmentPlan
+            fields = ['id',
+                      'user',
+                      'user_name',
+                      'treatment_type',
+                      'initial_appointment',
+                      'total_amount',
+                      'amount_paid',
+                      'amount_remaining',
+                      'estimated_duration_months',
+                      'is_completed',
+                      'created_at',
+                      'updated_at',
+                       ]
+            read_only_fields = ['id', 'user_name', 'amount_remaining', 'created_at', 'updated_at']
+
+        def get_user_name(self, obj):
+            if obj.user:
+                return f"{obj.user.first_name} {obj.user.last_name}".strip()
+            return 'N/A'
+        
+        def validate(self, attrs):
+            user = attrs.get('user')    
+            appointment_user = attrs.get('initial_appointment').user if attrs.get('initial_appointment') else None
+            if user and appointment_user and user != appointment_user:
+                raise serializers.ValidationError("The user of the treatment plan must match the user of the related initial appointment.")
+        
+    class TreatmentSessionSerializer(serializers.ModelSerializer):
+        class Meta:
+            model = TreatmentSession
+            fields = [
+                'id',
+                'treatment_plan',
+                'user_name',
+                'treatment_type',
+                'session_number',
+                'description',
+                'amount_for_session',
+                'amount_received',
+                'scheduled_at',
+                'completed_at',
+                'notification_sent',
+                'notified_at',
+                'created_at',
+                'updated_at',
+
+            ]
+
+            read_only_fields = [
+                'id', 
+                'user_name', 
+                'treatment_type',
+                'session_number', 
+                'notification_sent', 
+                'notified_at', 
+                'created_at', 
+                'updated_at'
+            ]
+
+        def get_user_name(self, obj):
+            if obj.treatment_plan and obj.treatment_plan.user:
+                return f"{obj.treatment_plan.user.first_name} {obj.treatment_plan.user.last_name}".strip()
+            return 'N/A'
+
+        def validate_scheduled_at(self, value):
+            if value and value < timezone.now():
+                raise serializers.ValidationError("Scheduled time cannot be in the past.")
+            return value
