@@ -197,6 +197,7 @@ class TreatmentPlanAdmin(ModelAdmin):
 
     def get_latest_prescription(self, obj):
         latest = Prescription.objects.filter(treatment_plan=obj).order_by('-issued_at').first()
+        user_prescriptions_count = Prescription.objects.filter(user=obj.user).count()
         if latest:
             url = reverse('admin:prescriptions_prescription_change', args=[latest.pk])
             return format_html(

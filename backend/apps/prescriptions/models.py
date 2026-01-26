@@ -50,12 +50,22 @@ class Prescription(models.Model):
         related_name="prescriptions"
     )
     doctor_name = models.CharField(max_length=255)
+    prescription_number = models.IntegerField()
     notes = models.TextField()
 
     issued_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         ordering = ['-issued_at']
+
+    def save(self, *args, **kwargs):
+        if not self.prescription_number:
+            last_prescription = Prescription.objects.filter(user=self.user).order_by('-prescription_number').first()
+            if last_prescription:
+                self.prescription_number = last_prescription.prescription_number + 1
+            else:
+                self.prescription_number = 1
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"Prescription for {self.user.first_name} {self.user.last_name}"
