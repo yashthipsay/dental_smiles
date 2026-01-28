@@ -33,6 +33,9 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
+    'DEFAULT_THROTTLE_RATES': {
+        'whatsapp_prescription': '2/day',
+    }
 }
 
 SIMPLE_JWT = {

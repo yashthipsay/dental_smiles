@@ -26,5 +26,6 @@ urlpatterns = [
     path('api/appointments/', include('apps.appointments.urls', namespace='appointments')),
     path('api/reviews/', include('apps.reviews.urls', namespace='reviews')),
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('api/prescriptions/', include('apps.prescriptions.urls', namespace='prescriptions')),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

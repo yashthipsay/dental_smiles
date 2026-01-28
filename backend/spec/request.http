@@ -114,3 +114,16 @@ Content-Type: application/json
     "phone_number": "+916767676767",
     "additional_notes": "braces treatment appointment"
 }
+
+### Request latest prescription on WhatsApp
+POST http://localhost:8000/api/prescriptions/?source=whatsapp&phone_number=+913232323232
+Content-Type: application/json
+
+### Create a review from WhatsApp
+POST {{baseUrl}}/reviews/?source=whatsapp&phone_number=+913232323232
+Content-Type: application/json
+
+{
+    "rating": 5,
+    "comment": "Great service! Very professional."
+}
