@@ -10,3 +10,5 @@ gunicorn
 django-unfold
 weasyprint
 djangorestframework_simplejwt
+dj-database-url
+python-decouple
