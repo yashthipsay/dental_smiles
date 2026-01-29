@@ -34,14 +34,14 @@ RUN mkdir -p /app
 # Set the working directory
 WORKDIR /app
 
-# Copy the requirements file
-COPY requirements.txt /tmp/requirements.txt
-
-# Copy the project code into the container
-COPY . /app
+# Copy the requirements file (Updated path for root context)
+COPY backend/requirements.txt /tmp/requirements.txt
 
 # Install the Python project requirements
 RUN pip install -r /tmp/requirements.txt
+
+# Copy the project code into the container (Updated path for root context)
+COPY backend /app
 
 # Collect static files
 RUN python manage.py collectstatic --noinput
