@@ -134,14 +134,16 @@ DATABASES = {
     }
 }
 
-DATABASE_URL = config("DATABASE_URL", default="")
+# Try to use DATABASE_URL if available (Railway provides this)
+DATABASE_URL = os.getenv("DATABASE_URL", "")
 if DATABASE_URL:
-    if DATABASE_URL.startswith("postgres://") or DATABASE_URL.startswith("postgresql://"):
-        DATABASES = {
-            "default": config(
-                default=DATABASE_URL,
-            )
-        }
+    DATABASES = {
+        "default": config(
+            default=DATABASE_URL,
+            conn_max_age=600,
+            conn_health_checks=True,
+        )
+    }
 
 
 
