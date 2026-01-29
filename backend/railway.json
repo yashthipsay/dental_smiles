@@ -1,16 +1,16 @@
 {
     "build": {
         "builder": "DOCKERFILE",
-        "dockerfilePath": "./Dockerfile",
+        "dockerfilePath": "./backend/Dockerfile",
         "watchPatterns": [
-            "requirements.txt",
-            "Dockerfile",
-            "manage.py",
-            "config/**",
-            "apps/**",
-            "phone_auth/**",
-            "static/**",
-            "railway.json"
+            "backend/requirements.txt",
+            "backend/Dockerfile",
+            "backend/manage.py",
+            "backend/config/**",
+            "backend/apps/**",
+            "backend/phone_auth/**",
+            "backend/static/**",
+            "backend/railway.json"
         ]
     },
     "deploy": {
