@@ -145,6 +145,9 @@ if DATABASE_URL:
         )
     }
 
+CSRF_TRUSTED_ORIGINS = [
+    "https://dentalsmiles-production.up.railway.app",
+]
 
 
 # Password validation
