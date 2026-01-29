@@ -164,6 +164,21 @@ dmypy.json
 # Cython debug symbols
 cython_debug/
 
+# IDEs
+.vscode/
+.idea/
+
+# Django static folder (if you change STATIC_ROOT to something else)
+staticfiles/
+
+
+# Keep the source static folder but ignore specific OS files inside it
+!static/
+
+# System files
+.DS_Store
+Thumbs.db
+
 # PyCharm
 #  JetBrains specific template is maintained in a separate JetBrains.gitignore that can
 #  be found at https://github.com/github/gitignore/blob/main/Global/JetBrains.gitignore
