@@ -134,7 +134,7 @@ DATABASES = {
     }
 }
 
-DATABASE_URL = config("DATABASE_URL", cast=str, default="")
+DATABASE_URL = config("DATABASE_URL", default="")
 if DATABASE_URL:
     if DATABASE_URL.startswith("postgres://") or DATABASE_URL.startswith("postgresql://"):
         DATABASES = {
