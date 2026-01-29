@@ -1,0 +1,21 @@
+{
+    "build": {
+        "builder": "DOCKERFILE",
+        "dockerfilePath": "./Dockerfile",
+        "watchPatterns": [
+            "requirements.txt",
+            "Dockerfile",
+            "manage.py",
+            "config/**",
+            "apps/**",
+            "phone_auth/**",
+            "static/**",
+            "railway.json"
+        ]
+    },
+    "deploy": {
+        "startCommand": "./startup.sh",
+        "restartPolicyType": "ON_FAILURE",
+        "restartPolicyMaxRetries": 5
+    }
+}
