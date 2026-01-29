@@ -135,7 +135,7 @@ DATABASES = {
 }
 
 # Try to use DATABASE_URL if available (Railway provides this)
-DATABASE_URL = os.getenv("DATABASE_URL", "")
+DATABASE_URL = "postgresql://postgres:***REMOVED***@crossover.proxy.rlwy.net:20476/railway"
 if DATABASE_URL:
     DATABASES = {
         "default": config(
