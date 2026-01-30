@@ -13,7 +13,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 import os
 from pathlib import Path
 from datetime import timedelta
-
+from django.core.management.utils import get_random_secret_key
 from dj_database_url import config
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -24,10 +24,35 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-($=^jm$t*^7v8y084y8*ifzhdz2xxyydpy_m8yozccg@&g#b!h'
+SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", get_random_secret_key())
+print("SECRET_KEY:", get_random_secret_key())
 
+DEV_MODE = os.getenv("DEV_MODE", "True")
+
+if DEV_MODE == "True":
+    DEBUG = True
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": "clinic",
+            "USER": "clinic_user",
+            "PASSWORD": "clinic_pass",
+            "HOST": "db",
+            "PORT": 5432,
+        }
+    }
+else:
+    DEBUG = False
+    DATABASE_URL = os.getenv("DATABASE_URL")
+    DATABASES = {
+        "default": config(
+            default=DATABASE_URL,
+            conn_max_age=600,
+            conn_health_checks=True,
+        )
+    }
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+# DEBUG = True
 
 ALLOWED_HOSTS = [
     ".railway.app",
@@ -127,26 +152,26 @@ WSGI_APPLICATION = 'config.wsgi.application'
 
 
 
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        'NAME': 'postgres_healthcare',
-    }
-}
+# DATABASES = {
+#     "default": {
+#         "ENGINE": "django.db.backends.postgresql",
+#         'NAME': 'postgres_healthcare',
+#     }
+# }
 
-# Try to use DATABASE_URL if available (Railway provides this)
-DATABASE_URL = "postgresql://postgres:***REMOVED***@crossover.proxy.rlwy.net:20476/railway"
-if DATABASE_URL:
-    DATABASES = {
-        "default": config(
-            default=DATABASE_URL,
-            conn_max_age=600,
-            conn_health_checks=True,
-        )
-    }
+# # Try to use DATABASE_URL if available (Railway provides this)
+# DATABASE_URL = os.getenv("DATABASE_URL")
+# if DATABASE_URL:
+#     DATABASES = {
+#         "default": config(
+#             default=DATABASE_URL,
+#             conn_max_age=600,
+#             conn_health_checks=True,
+#         )
+#     }
 
 CSRF_TRUSTED_ORIGINS = [
-    "https://dentalsmiles-production.up.railway.app",
+    os.getenv("PRODUCTION_URL", ""),
 ]
 
 
