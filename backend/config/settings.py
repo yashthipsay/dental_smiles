@@ -226,7 +226,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Django Unfold Admin Configuration
 UNFOLD = {
-    "SITE_TITLE": "Dental Smiles Admin",
-    "SITE_HEADER": "Dental Smiles",
+    "SITE_TITLE": "Blissful Smiles Admin",
+    "SITE_HEADER": "Blissful Smiles",
     "THEME": "light",
 }
