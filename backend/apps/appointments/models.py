@@ -23,7 +23,8 @@ class Appointment(models.Model):
         related_name="appointments"
     )
     scheduled_at = models.DateTimeField()
-    end_time = models.DateTimeField(null=True, blank=True)
+    # Keep default to 30 minutes
+    end_time = models.DateTimeField(null=True, blank=True, default=30)
     status = models.CharField(
         max_length=20,
         choices=APPOINTMENT_STATUS,
