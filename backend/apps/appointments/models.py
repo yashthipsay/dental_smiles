@@ -3,7 +3,6 @@ from django.conf import settings
 from django.dispatch import receiver
 from django.utils import timezone
 from django.core.exceptions import ValidationError
-from .notification_service import send_treatment_session_notification
 
 User = settings.AUTH_USER_MODEL
 
@@ -24,7 +23,7 @@ class Appointment(models.Model):
     )
     scheduled_at = models.DateTimeField()
     # Keep default to 30 minutes
-    end_time = models.DateTimeField(null=True, blank=True, default=30)
+    end_time = models.DateTimeField(null=True, blank=True)
     status = models.CharField(
         max_length=20,
         choices=APPOINTMENT_STATUS,

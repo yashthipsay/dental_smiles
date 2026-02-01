@@ -1,8 +1,11 @@
 import logging
 from django.utils import timezone
+from django.conf import settings
+from twilio.rest import Client
 
 logger = logging.getLogger(__name__)
 
+client = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
 
 class AppointmentEvent:
     CREATED = "appointment.created"
@@ -34,6 +37,7 @@ def send_notification_on_whatsapp(instance, **kwargs):
     TODO: Integrate with WhatsApp API (Twilio or similar)
     """
     event = kwargs.get('event')
+    print("Sending whatsapp message...")
     user = getattr(instance, 'user', None)
     if not user and hasattr(instance, 'treatment_plan'):
         user = instance.treatment_plan.user
@@ -55,6 +59,12 @@ def send_notification_on_whatsapp(instance, **kwargs):
         return {'status': 'failed', 'reason': f'No whatsapp template for event: {event}'}
     
     logger.info(f"[WhatsApp] Sending to {phone_number}: {message}")
+
+    client.messages.create(
+        body=message,
+        to=f"whatsapp:{phone_number}",
+        from_=settings.TWILIO_WHATSAPP_NUMBER,
+    )
 
     return {
         'status': 'sent',
@@ -90,6 +100,12 @@ def send_notification_on_sms(instance, **kwargs):
 
     # Mock SMS send (for now, just log)
     logger.info(f"[SMS] Sending to {phone_number}: {message}")
+
+    client.messages.create(
+        body=message,
+        to=f"{phone_number}",
+        from_=settings.TWILIO_PHONE_NUMBER,
+    )
 
     return {
         'status': 'sent',

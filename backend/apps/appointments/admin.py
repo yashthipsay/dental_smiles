@@ -8,7 +8,7 @@ from django.utils import timezone
 from django.db.models import F
 from django.template.response import TemplateResponse
 from .models import AppointmentRequest, Appointment, TreatmentSession, TreatmentPlan
-from .notification_service import send_treatment_session_notification
+from .notification_service import send_notification_on_whatsapp
 from ..prescriptions.models import Prescription
 
 @admin.register(Appointment)
@@ -290,12 +290,12 @@ class TreatmentSessionAdmin(ModelAdmin):
         """Custom admin action to send WhatsApp notification"""
         try:
             treatment_session = TreatmentSession.objects.get(pk=session_id)
-            response = send_treatment_session_notification(treatment_session)
+            response = send_notification_on_whatsapp(treatment_session)
 
 
             self.message_user(
                 request,
-                f"WhatsApp ntification sent to {treatment_session.treatment_plan.user.first_name} {treatment_session.treatment_plan.user.last_name}."
+                f"WhatsApp notification sent to {treatment_session.treatment_plan.user.first_name} {treatment_session.treatment_plan.user.last_name}."
             )
         except TreatmentSession.DoesNotExist:
             self.message_user(request, "Treatment session not found", level='error')

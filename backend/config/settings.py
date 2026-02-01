@@ -56,6 +56,7 @@ else:
 
 ALLOWED_HOSTS = [
     ".railway.app",
+    "localhost"
 ]
 
 REST_FRAMEWORK = {
@@ -101,9 +102,10 @@ CELERY_ACCEPT_CONTENT = ["json"]
 CELERY_TASK_SERIALIZER = "json"
 
 # Twilio Settings (for future use)
-TWILIO_ACCOUNT_SID = "ACfe28895f504282e8bcf879ad2ab4e597"
-TWILIO_AUTH_TOKEN = "ede8c2230b6d7e5f75b4a94632f1640b"
-TWILIO_PHONE_NUMBER = "+12316384477"
+TWILIO_ACCOUNT_SID = "ACbdf25061c6d08016edd68b8870e98c9f"
+TWILIO_AUTH_TOKEN = "a29ec723fe093e2e8f6198fbaa9e1507"
+TWILIO_WHATSAPP_NUMBER = "whatsapp:+14155238886"
+TWILIO_PHONE_NUMBER = "+19302079230"
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',

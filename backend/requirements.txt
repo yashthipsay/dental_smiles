@@ -13,3 +13,4 @@ djangorestframework_simplejwt
 dj-database-url
 python-decouple
 whitenoise
+twilio
