@@ -2,7 +2,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.utils import timezone
 from .models import TreatmentSession, TreatmentPlan, Appointment
-from .notification_service import send_notification_on_whatsapp, send_notification_on_sms
+from .notification_service import send_notification_on_whatsapp
 from .notification_service import (
         AppointmentEvent, TreatmentPlanEvent, TreatmentSessionEvent
     )
@@ -19,21 +19,21 @@ def auto_notify_treatment_session(sender, instance, created, **kwargs):
             send_notification_on_whatsapp(instance, event=AppointmentEvent.CREATED)
         else:
             event = AppointmentEvent.CANCELLED if instance.status == 'cancelled' else AppointmentEvent.UPDATED
-            send_notification_on_sms(instance, event=event)
+            send_notification_on_whatsapp(instance, event=event)
 
     elif sender == TreatmentPlan:
         if created:
             send_notification_on_whatsapp(instance, event=TreatmentPlanEvent.CREATED)
         elif instance.is_completed:
-            send_notification_on_sms(instance, event=TreatmentPlanEvent.COMPLETED)
+            send_notification_on_whatsapp(instance, event=TreatmentPlanEvent.COMPLETED)
         else:
-            send_notification_on_sms(instance, event=TreatmentPlanEvent.UPDATED)
+            send_notification_on_whatsapp(instance, event=TreatmentPlanEvent.UPDATED)
 
     elif sender == TreatmentSession:
         if created:
             send_notification_on_whatsapp(instance, event=TreatmentSessionEvent.CREATED)
         else:
-            send_notification_on_sms(instance, event=TreatmentSessionEvent.UPDATED)
+            send_notification_on_whatsapp(instance, event=TreatmentSessionEvent.UPDATED)
 
     if hasattr(instance, 'notified_at'):
         sender.objects.filter(pk = instance.pk).update(notified_at=timezone.now())
@@ -46,3 +46,5 @@ def auto_notify_treatment_session(sender, instance, created, **kwargs):
     #     instance.notification_sent = True
     #     instance.notified_at = timezone.now()
     #     instance.save(update_fields=['notification_sent', 'notified_at'])
+
+
