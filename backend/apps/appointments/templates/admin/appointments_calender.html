@@ -1,75 +1,179 @@
 {% extends "admin/base_site.html" %}
 
+{% block extrastyle %}
+  <style>
+    /* Use FullCalendar CSS variables for easier theming */
+    :root {
+      --fc-border-color: #e0e0e0;
+      --fc-daygrid-event-dot-width: 6px;
+      --fc-event-border: none;
+      --fc-event-bg-opacity: 0.9;
+      --fc-event-text-color: white;
+    }
+
+    #calendar {
+      max-width: 1400px;
+      margin: 2rem auto;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+      overflow: hidden;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    /* Header improvements */
+    .fc .fc-toolbar {
+      padding: 1.2rem 1.5rem;
+      background: #f8f9fa;
+      border-bottom: 1px solid var(--fc-border-color);
+    }
+
+    .fc .fc-toolbar-title {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: #333;
+    }
+
+    .fc .fc-button {
+      border-radius: 6px;
+      padding: 0.5rem 1rem;
+      font-weight: 500;
+    }
+
+    .fc .fc-button-primary {
+      background-color: #0d6efd;
+      border-color: #0d6efd;
+    }
+
+    /* Day cells */
+    .fc .fc-daygrid-day {
+      background: white;
+      transition: background 0.2s;
+    }
+
+    .fc .fc-daygrid-day.fc-day-today {
+      background: rgba(13, 110, 253, 0.08);
+    }
+
+    .fc .fc-daygrid-day-number {
+      padding: 8px 10px;
+      font-weight: 500;
+      color: #555;
+    }
+
+    /* Events – cleaner, pill-like or card-like */
+    .fc-event {
+      border: none !important;
+      border-radius: 8px !important;
+      padding: 4px 8px !important;
+      font-size: 0.9rem !important;
+      margin: 3px 4px !important;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.12);
+      transition: transform 0.15s, box-shadow 0.15s;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+    .fc-event:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 3px 10px rgba(0,0,0,0.15);
+    }
+
+    .fc-event-title {
+      font-weight: 600;
+      color: white !important;
+    }
+
+    .fc-event-time {
+      opacity: 0.9;
+      font-size: 0.85em;
+    }
+
+    /* TimeGrid view improvements */
+    .fc-timegrid-slot {
+      height: 2.2em; /* slightly taller slots for readability */
+    }
+
+    /* Responsive tweaks */
+    @media (max-width: 992px) {
+      #calendar {
+        font-size: 0.95rem;
+      }
+      .fc .fc-toolbar {
+        flex-direction: column;
+        gap: 0.8rem;
+      }
+    }
+  </style>
+{% endblock %}
+
 {% block content %}
-<h1>Appointments Calendar</h1>
-<div id="calendar"></div>
+  <div class="container-fluid">
+    <h1 class="mb-4">Appointments Calendar</h1>
+    <div id="calendar"></div>
+  </div>
 
-<script src='https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.20/index.global.min.js'></script>
-<script src='https://cdn.jsdelivr.net/npm/@fullcalendar/daygrid@6.1.20/index.global.min.js'></script>
-<script src='https://cdn.jsdelivr.net/npm/@fullcalendar/timegrid@6.1.20/index.global.min.js'></script>
+  {{ events|json_script:"calendar-events" }}
 
-<style>
-  #calendar {
-    max-width: 1300px;
-    margin: 0 auto;
-    font-size: 13px;
-  }
+  <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.20/index.global.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/daygrid@6.1.20/index.global.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/timegrid@6.1.20/index.global.min.js"></script>
+  <!-- Optional: list view or interaction plugin if needed later -->
+  <!-- <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/list@6.1.20/index.global.min.js"></script> -->
 
-  .fc-event {
-    padding: 6px !important;
-    border: none !important;
-    border-radius: 4px !important;
-  }
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const calendarEl = document.getElementById('calendar');
+      const rawEvents = JSON.parse(document.getElementById('calendar-events').textContent);
 
-  .fc-event-title {
-    font-weight: bold;
-    color: white !important;
-    font-size: 12px !important;
-    padding: 4px !important;
-  }
+      // Optional: enrich events with custom classNames or styling based on data
+      const events = rawEvents.map(event => {
+        let classNames = ['fc-event-custom'];
+        if (event.extendedProps?.status) {
+          classNames.push(`status-${event.extendedProps.status.toLowerCase()}`);
+        }
+        return { ...event, classNames };
+      });
 
-  .fc-daygrid-event {
-    margin: 2px !important;
-  }
+      const calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'dayGridMonth',
+        headerToolbar: {
+          left:   'prev,next today',
+          center: 'title',
+          right:  'dayGridMonth,timeGridWeek,timeGridDay'  // ,listWeek  if you add list plugin
+        },
+        height: 'auto',               // better than fixed height in many cases
+        contentHeight: 'auto',
+        aspectRatio: 1.6,             // wider feel, adjust as needed (1.35–2.0)
+        events: events,
+        eventDisplay: 'block',        // solid blocks in month view
+        displayEventTime: true,
+        editable: false,              // set true later if drag-drop needed
+        selectable: false,
 
-  .fc-col-header-cell {
-    padding: 10px 0 !important;
-    font-size: 13px !important;
-  }
+        // Optional: richer event rendering (title + time + custom info)
+        eventContent: function(arg) {
+          let html = `<div class="fc-event-title">${arg.event.title}</div>`;
+          if (arg.event.start && arg.timeText) {
+            html += `<div class="fc-event-time">${arg.timeText}</div>`;
+          }
+          if (arg.event.extendedProps?.patient) {
+            html += `<div style="font-size:0.85em; opacity:0.9;">
+                       👤 ${arg.event.extendedProps.patient}
+                     </div>`;
+          }
+          return { html: html };
+        },
 
-  .fc-daygrid-day {
-    height: 120px !important;
-  }
+        // Optional: tooltip on hover
+        eventDidMount: function(info) {
+          info.el.title = info.event.title + 
+            (info.event.extendedProps?.patient ? ` — ${info.event.extendedProps.patient}` : '');
+        }
+      });
 
-  .fc-daygrid-day-frame {
-    min-height: 120px !important;
-  }
-
-  .fc-event-bg {
-    opacity: 1 !important;
-  }
-</style>
-
-{{ events|json_script:"calendar-events" }}
-
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-  const calendarEl = document.getElementById('calendar');
-  const events = JSON.parse(document.getElementById('calendar-events').textContent);
-  
-  const calendar = new FullCalendar.Calendar(calendarEl, {
-    initialView: 'dayGridMonth',
-    headerToolbar: {
-      left: 'prev,next today',
-      center: 'title',
-      right: 'dayGridMonth,timeGridWeek,timeGridDay'
-    },
-    events: events,
-    eventDisplay: 'block',
-    displayEventTime: true,
-  });
-  
-  calendar.render();
-});
-</script>
+      calendar.render();
+    });
+  </script>
 {% endblock %}

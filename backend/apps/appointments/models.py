@@ -174,6 +174,13 @@ class TreatmentPlan(models.Model):
     
 class TreatmentSession(models.Model):
     """Individual sessions/phases of a treatment plan"""
+    SESSION_STATUS = [
+        ("pending", "Pending"),
+        ("confirmed", "Confirmed"),
+        ("completed", "Completed"),
+        ("cancelled", "Cancelled"),
+    ]
+
     treatment_plan = models.ForeignKey(
         TreatmentPlan,
         on_delete=models.CASCADE,
@@ -187,6 +194,13 @@ class TreatmentSession(models.Model):
     
     scheduled_at = models.DateTimeField(null=True, blank=True)
     completed_at = models.DateTimeField(null=True, blank=True)
+
+    status = models.CharField(
+        max_length=20,
+        choices=SESSION_STATUS,
+        default="pending",
+        db_index=True
+    )
 
     notification_sent = models.BooleanField(default=False)
     notified_at = models.DateTimeField(null=True, blank=True)

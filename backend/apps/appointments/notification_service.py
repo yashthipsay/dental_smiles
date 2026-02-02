@@ -10,6 +10,7 @@ client = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
 class AppointmentEvent:
     CREATED = "appointment.created"
     UPDATED = "appointment.updated"
+    COMPLETED = "appointment.completed"
     CANCELLED = "appointment.deleted"
 
 class UserEvent:
@@ -65,6 +66,12 @@ def send_notification_on_whatsapp(instance, **kwargs):
             f"We've *updated* your appointment:\n"
             f"🆕 *{format_datetime(instance.scheduled_at)}*\n\n"
             f"Everything else stays the same. Questions? Just reply! 😄"
+        )
+    elif event == AppointmentEvent.COMPLETED:
+        message = (
+            f"Great seeing you today, *{full_name}*! 😁\n\n"
+            f"Your appointment on *{format_datetime(instance.scheduled_at)}* is all wrapped up! 🎉\n\n"
+            f"Keep up the great dental care - your smile looks fantastic! 🌟"
         )
     elif event == AppointmentEvent.CANCELLED:
         message = (
