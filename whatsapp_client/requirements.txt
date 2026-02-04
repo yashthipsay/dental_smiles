@@ -1,0 +1,8 @@
+fastapi 
+uvicorn 
+twilio 
+redis 
+python-multipart 
+python-dotenv
+httpx
+ngrok
