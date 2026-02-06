@@ -12,14 +12,23 @@ app = FastAPI()
 
 T1_STANDARD_SID = "***REMOVED***"
 T2_PRESCRIPTION_SID = "***REMOVED***"
+T2_EXISTING_USER_SID = "***REMOVED***"
+T3_MORE_OPTIONS_SID = "HX2bc8e8523011a6ee1111501da01e60ce"
 DJANGO_BACKEND_URL = "http://localhost:8000/api"
 TWILIO_PHONE_NUMBER = "+14155238886"
 FASTAPI_DOMAIN = "https://***REMOVED***.dev"
 
 redis_client = Redis(host='localhost', port=6379, db=0, decode_responses=True)
-client = Client(os.getenv("TWILIO_SID"), os.getenv("TWILIO_AUTH"))
+client = Client("***REMOVED***", "***REMOVED***")
 
-def check_prescription(patient_id: str):
+async def check_prescription(patient_id: str):
+    clean_phone = patient_id.replace("whatsapp", "")
+    async with httpx.AsyncClient() as http_client:
+        response = await http_client.get(
+            f"{DJANGO_BACKEND_URL}/prescriptions/exists/?source=whatsapp&phone_number={clean_phone}"
+        )
+        if response.status_code != 200:
+            raise HTTPException(status_code=404, detail="Prescription not found")
     return True
 
 @app.get("/fetch-prescription/{rx_id}")

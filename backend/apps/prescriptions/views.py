@@ -62,7 +62,12 @@ class Prescriptions(APIView):
         )
 
 class PrescriptionExists(APIView):
-    permission_classes = [AllowAny]
+    def get_permissions(self):
+        source = self.request.query_params.get('source')
+
+        if source == "whatsapp":
+            return [AllowAny()]
+        return [IsAuthenticated()]
 
     def get(self, request):
         phone_number = request.query_params.get("phone_number")

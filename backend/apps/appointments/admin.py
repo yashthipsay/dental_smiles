@@ -5,8 +5,11 @@ from django.urls import reverse, path
 from django.shortcuts import redirect
 from django.http import HttpResponseRedirect
 from django.utils import timezone
+from django.db import models
+from django import forms
 from django.db.models import F
 from django.template.response import TemplateResponse
+from django.forms import DateTimeInput
 from .models import AppointmentRequest, Appointment, TreatmentSession, TreatmentPlan
 from .notification_service import send_notification_on_whatsapp
 from ..prescriptions.models import Prescription
@@ -26,13 +29,26 @@ class AppointmentAdmin(ModelAdmin):
             'fields': ('user',)
         }),
         ('Appointment Details', {
-            'fields': ('scheduled_at', 'end_time', 'status', 'payment_method', 'notes')
+            'fields': ('scheduled_at', 'end_time', 'status', 'payment_method', 'notes'),
         }),
         ('Timestamps', {
             'fields': ('created_at', 'updated_at'),
             'classes': ('collapse',)
         })
     )
+
+    formfield_overrides = {
+        models.DateTimeField: {
+            "form_class": forms.DateTimeField,
+            "widget": DateTimeInput(
+                attrs={
+                    "type": "datetime-local",
+                    "step": "60",
+                },
+                format="%Y-%m-%dT%H:%M"
+            ),
+        }
+    }
 
     def get_prescriptions(self, obj):
         prescriptions = Prescription.objects.filter(appointment=obj)
@@ -245,6 +261,19 @@ class TreatmentSessionAdmin(ModelAdmin):
             'classes': ('collapse',)
         })
     )
+
+    formfield_overrides = {
+        models.DateTimeField: {
+            "form_class": forms.DateTimeField,
+            "widget": DateTimeInput(
+                attrs={
+                    "type": "datetime-local",
+                    "step": "60",
+                },
+                format="%Y-%m-%dT%H:%M"
+            ),
+        }
+    }
 
     def get_user_name(self, obj):
         if obj.treatment_plan and obj.treatment_plan.user:
