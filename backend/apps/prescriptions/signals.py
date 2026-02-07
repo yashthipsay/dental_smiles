@@ -5,12 +5,13 @@ from .models import Prescription
 from django.conf import settings
 from twilio.rest import Client
 import logging
+import os
 
 logger = logging.getLogger(__name__)
 client = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
 
 # Use the same SID as in your WhatsApp client for prescription menus
-T2_PRESCRIPTION_SID = "***REMOVED***"
+T2_PRESCRIPTION_SID = os.getenv("T2_PRESCRIPTION_SID")
 
 @receiver(pre_save, sender=Prescription)
 def store_original_values(sender, instance, **kwargs):

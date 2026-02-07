@@ -1,5 +1,5 @@
 ### Variables
-@baseUrl = http://localhost:8000/api
+@baseUrl = https://dentalsmiles-production.up.railway.app/api
 
 ### =====================
 ### Phone OTP Authentication (No Auth Required)
@@ -111,7 +111,7 @@ POST {{baseUrl}}/appointments/requests/?source=whatsapp
 Content-Type: application/json
 
 {
-    "phone_number": "+916767676767",
+    "phone_number": "+919175668567",
     "additional_notes": "braces treatment appointment"
 }
 
