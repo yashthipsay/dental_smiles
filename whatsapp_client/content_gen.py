@@ -2,13 +2,15 @@ import os
 import requests
 from requests.auth import HTTPBasicAuth
 from typing import Dict
+from dotenv import load_dotenv
 
+load_dotenv()
 
 TWILIO_CONTENT_URL = "https://content.twilio.com/v1/Content"
 
 AUTH = HTTPBasicAuth(
-    "***REMOVED***",
-    "***REMOVED***",
+    os.getenv("TWILIO_ACCOUNT_SID"),
+    os.getenv("TWILIO_AUTH_TOKEN"),
 )
 
 
